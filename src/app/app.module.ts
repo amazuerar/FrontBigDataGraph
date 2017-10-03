@@ -7,6 +7,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { GraphComponent } from './graph/graph.component';
 import { RouterModule, Routes } from '@angular/router';
 import { LocationStrategy, HashLocationStrategy } from '@angular/common';
+import { DatePickerModule } from 'angular-io-datepicker';
+import { OverlayModule } from 'angular-io-overlay';
+import { GraphComponentComponent } from './graph-component/graph-component.component';
 
 const appRoutes: Routes = [
   { path: 'Graph', component: GraphComponent },
@@ -16,13 +19,17 @@ const appRoutes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
-    GraphComponent
+    GraphComponent,
+    GraphComponentComponent
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(appRoutes),
     HttpModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule,
+    OverlayModule,
+    DatePickerModule,
   ],
   providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }, BackService ],
   bootstrap: [AppComponent]
