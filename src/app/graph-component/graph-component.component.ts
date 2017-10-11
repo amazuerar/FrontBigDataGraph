@@ -18,12 +18,13 @@ export class GraphComponentComponent implements OnInit, OnChanges, AfterViewInit
   @Input()
   data: any;
 
-  name: string;
+  name;
   svg;
   color;
   simulation;
   link;
   node;
+  zoom;
 
 
   constructor( @Inject(ElementRef) elementRef: ElementRef) {
@@ -39,16 +40,18 @@ export class GraphComponentComponent implements OnInit, OnChanges, AfterViewInit
 
     const width = +this.svg.attr('width');
     const height = +this.svg.attr('height');
-
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
 
     this.simulation = d3.forceSimulation()
       .force('link', d3.forceLink().id(function (d) { return d.id; }))
+      // .force('link', d3.forceLink().distance(function(d) {return d.distance; }).strength(0.1))
       .force('charge', d3.forceManyBody())
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     this.render(miserables);
   }
+
+
 
   ticked() {
     this.link
@@ -60,6 +63,10 @@ export class GraphComponentComponent implements OnInit, OnChanges, AfterViewInit
     this.node
       .attr('cx', function (d) { return d.x; })
       .attr('cy', function (d) { return d.y; });
+
+    this.name
+      .attr('x', function (d) { return d.x; })
+      .attr('y', function (d) { return d.y; });
   }
 
   render(graph) {
@@ -68,29 +75,44 @@ export class GraphComponentComponent implements OnInit, OnChanges, AfterViewInit
       .selectAll('line')
       .data(graph.links)
       .enter().append('line')
-      .attr('stroke-width', function (d) { return Math.sqrt(d.value); });
+      .attr('stroke', 'gray')
+      // .attr('stroke-width', function (d) { return Math.sqrt(d.value); });
+      .attr('stroke-width', 1);
 
     this.node = this.svg.append('g')
       .attr('class', 'nodes')
       .selectAll('circle')
       .data(graph.nodes)
       .enter().append('circle')
-      .attr('r', 5)
+      .attr('r', 7)
       .attr('fill', (d) => { return this.color(d.group); })
       .call(d3.drag()
         .on('start', (d) => { return this.dragstarted(d) })
         .on('drag', (d) => { return this.dragged(d) })
         .on('end', (d) => { return this.dragended(d) }));
 
-    this.node.append('title')
+    this.name = this.svg.append('g')
+      .attr('class', 'text')
+      .selectAll('text')
+      .data(graph.nodes)
+      .enter().append('text')
+      .attr('font-size', '8px')
+      .attr('font', 'sans-serif')
+      .attr('pointer-events', 'none')
       .text(function (d) { return d.id; });
 
     this.simulation
       .nodes(graph.nodes)
-      .on('tick', () => { return this.ticked() });
+      .on('tick', () => { this.ticked(); });
 
     this.simulation.force('link')
       .links(graph.links);
+
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 40])
+      .translateExtent([[-100, -100], [1300 + 90, 510 + 100]])
+      .on('zoom', () => {  });
+
   }
 
   dragged(d) {
@@ -109,6 +131,8 @@ export class GraphComponentComponent implements OnInit, OnChanges, AfterViewInit
     d.fx = d.x;
     d.fy = d.y;
   }
+
+
 
   ngOnDestroy() {
 
