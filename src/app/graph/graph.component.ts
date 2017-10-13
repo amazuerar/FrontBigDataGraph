@@ -31,6 +31,8 @@ export class GraphComponent implements OnInit {
   g;
   arrow;
   path;
+  edgelabels;
+  edgepath;
 
   constructor(private backservice: BackService, private fb: FormBuilder) {
   }
@@ -62,6 +64,20 @@ export class GraphComponent implements OnInit {
         const dr = Math.sqrt(dx * dx + dy * dy);
         return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
       });
+
+    this.edgepath.attr('d', function (d) {
+      return 'M ' + d.source.x + ' ' + d.source.y + ' L ' + d.target.x + ' ' + d.target.y;
+    });
+
+    this.edgelabels.attr('transform', function (d) {
+      if (d.target.x < d.source.x) {
+        const bbox = this.getBBox();
+
+        const rx = bbox.x + bbox.width / 2;
+        const ry = bbox.y + bbox.height / 2;
+        return 'rotate(180 ' + rx + ' ' + ry + ')';
+      } else { return 'rotate(0)'; }
+    });
   }
 
 
@@ -78,8 +94,8 @@ export class GraphComponent implements OnInit {
     this.radius = 8;
 
     this.simulation = d3.forceSimulation(nodes)
-      .force('links', d3.forceLink(links).id(function (d) { return d.name; }))
-      .force('charge_force', d3.forceManyBody().strength(-60))
+      .force('link', d3.forceLink(links).id(function (d) { return d.name; }).distance(200))
+      .force('charge_force', d3.forceManyBody().strength(-90))
       .force('center_force', d3.forceCenter(width / 2, height / 2));
 
 
@@ -92,8 +108,8 @@ export class GraphComponent implements OnInit {
       .enter().append('line')
       .attr('stroke-width', 2)
       .style('stroke', this.linkColour)
-      .attr("class", function (d) { return "link " + d.type; })
-      .attr("marker-end", function (d) { return "url(#" + d.type + ")"; });
+      .attr('class', function (d) { return 'link ' + d.type; })
+      .attr('marker-end', function (d) { return 'url(#' + d.type + ')'; });
 
 
     this.node = this.g.append('g')
@@ -134,7 +150,32 @@ export class GraphComponent implements OnInit {
       .attr('markerHeight', 6)
       .attr('orient', 'auto')
       .append('path')
-      .attr('d', 'M0,-5L10,0L0,5');
+      .attr('d', 'M 0, -5 L 10 , 0 L 0 , 5');
+
+    this.edgepath = this.g.append('g')
+      .selectAll(".edgepath")
+      .data(links)
+      .enter()
+      .append('path')
+      .attr('class', 'edgepath')
+      .attr('id', function (d, i) { return 'edgepath' + i; })
+      .style("pointer-events", "none");
+
+    this.edgelabels = this.g.append('g')
+      .selectAll("edgelabel")
+      .data(links)
+      .enter()
+      .append('text')
+      .style("pointer-events", "none")
+      .attr('class', 'edgelabel')
+      .attr('id', function (d, i) { return 'edgelabel' + i; })
+      .attr('font-size', '15')
+      .append('textPath')
+      .attr('xlink:href', function (d, i) { return '#edgepath' + i })
+      .style("text-anchor", "middle")
+      .style("pointer-events", "none")
+      .attr("startOffset", "50%")
+      .text(function (d) {return 'va hacia> ' + d.target.name; });
 
     this.simulation.on('tick', () => { this.ticked(); });
 
@@ -142,38 +183,38 @@ export class GraphComponent implements OnInit {
 
 
   linkColour(d) {
-    if (d.type == "B") {
-      return "red";
+    if (d.type == 'B') {
+      return 'red';
     }
-    if (d.type == "A") {
-      return "blue";
+    if (d.type == 'A') {
+      return 'blue';
     }
-    if (d.type == "E") {
-      return "green";
+    if (d.type == 'E') {
+      return 'green';
     }
   }
 
   circleColour(d) {
-    if (d.group == "0") {
-      return "blue";
+    if (d.group == '0') {
+      return 'blue';
     }
-    if (d.group == "1") {
-      return "red";
+    if (d.group == '1') {
+      return 'red';
     }
-    if (d.group == "2") {
-      return "green";
+    if (d.group == '2') {
+      return 'green';
     }
-    if (d.group == "3") {
-      return "yellow";
+    if (d.group == '3') {
+      return 'yellow';
     }
-    if (d.group == "4") {
-      return "black";
+    if (d.group == '4') {
+      return 'black';
     }
-    if (d.group == "5") {
-      return "cyan";
+    if (d.group == '5') {
+      return 'cyan';
     }
-    if (d.group == "6") {
-      return "pink";
+    if (d.group == '6') {
+      return 'pink';
     }
 
   }
