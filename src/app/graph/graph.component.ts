@@ -137,8 +137,6 @@ export class GraphComponent implements OnInit {
       .attr('d', 'M0,-5L10,0L0,5');
 
     this.simulation.on('tick', () => { this.ticked(); });
-    
-
 
   }
 
