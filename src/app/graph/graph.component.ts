@@ -1,11 +1,14 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, AfterViewInit, OnChanges } from '@angular/core';
+import * as d3 from 'd3';
 import { BackService } from '../provider/back.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
+import { miserables } from '../../assets/miserables';
+import { ejemplo } from '../../assets/ejemplo';
 
 @Component({
   selector: 'app-graph',
   templateUrl: './graph.component.html',
-  styleUrls: ['./graph.component.sass']
+  styleUrls: ['./graph.component.css']
 })
 export class GraphComponent implements OnInit {
 
@@ -16,6 +19,17 @@ export class GraphComponent implements OnInit {
   lugar: string;
   nodes = [];
   links = [];
+
+
+  name;
+  svg;
+  color;
+  simulation;
+  link;
+  node;
+  zoom;
+  radius;
+  g;
 
   constructor(private backservice: BackService, private fb: FormBuilder) {
   }
@@ -359,8 +373,132 @@ export class GraphComponent implements OnInit {
     ]
   }
 
+  ngAfterViewInit() {
+    this.svg = d3.select('svg');
+    const width = +this.svg.attr('width');
+    const height = +this.svg.attr('height');
+    this.color = d3.scaleOrdinal(d3.schemeCategory20);
+    this.radius = 8;
+
+    this.simulation = d3.forceSimulation(miserables.nodes)
+      .force('links', d3.forceLink(miserables.links).id(function (d) { return d.id; }))
+      .force('charge_force', d3.forceManyBody().strength(-100))
+      .force('center_force', d3.forceCenter(width / 2, height / 2));
+
+    this.render(miserables);
+  }
+
+  ticked() {
+    this.link
+      .attr('x1', function (d) { return d.source.x; })
+      .attr('y1', function (d) { return d.source.y; })
+      .attr('x2', function (d) { return d.target.x; })
+      .attr('y2', function (d) { return d.target.y; });
+
+    this.node
+      .attr('cx', function (d) { return d.x; })
+      .attr('cy', function (d) { return d.y; });
+
+    this.name
+      .attr('x', function (d) { return d.x; })
+      .attr('y', function (d) { return d.y; });
+  }
+
+  render(graph) {
+    console.log("a")
+    this.g = this.svg.append('g')
+      .attr('class', 'everything');
+
+    this.link = this.g.append('g')
+      .attr('class', 'links')
+      .selectAll('line')
+      .data(graph.links)
+      .enter().append('line')
+      .attr('stroke-width', 2)
+      .style('stroke', 'gray');
+
+    this.node = this.g.append('g')
+      .attr('class', 'nodes')
+      .selectAll('circle')
+      .data(graph.nodes)
+      .enter()
+      .append('circle')
+      .attr('r', this.radius)
+      .attr('fill', (d) => { return this.color(d.group); })
+      .call(d3.drag()
+        .on('start', (d) => { return this.drag_start(d) })
+        .on('drag', (d) => { return this.drag_drag(d) })
+        .on('end', (d) => { return this.drag_end(d) }));
+
+    this.name = this.g.append('g')
+      .attr('class', 'text')
+      .selectAll('text')
+      .data(graph.nodes)
+      .enter().append('text')
+      .attr('font-size', '8px')
+      .attr('font', 'sans-serif')
+      .attr('pointer-events', 'none')
+      .text(function (d) { return d.id; });
+
+
+    this.simulation.on('tick', () => { this.ticked(); });
+
+
+  }
+
+  zoom_actions() {
+    this.g.attr("transform", d3.event.transform)
+  }
+
+
+  drag_drag(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  drag_end(d) {
+    if (!d3.event.active) this.simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
+  drag_start(d) {
+    if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+
+
+  ngOnDestroy() {
+  }
+
+
+  ngOnChanges(changes) {
+  }
+
   filter() {
-    console.log(this.start, this.end, this.personaje, this.hecho, this.lugar);
+    this.backservice.getNodos().then((nod) => {
+      this.nodes = nod; console.log(this.nodes);
+    })
+
+    this.backservice.getEnlaces().then((enl) => {
+      this.links = enl;
+      console.log(this.links);
+    })
+
+  }
+
+   clean() {
+    this.backservice.getNodos2().then((nod) => {
+      this.nodes = nod; console.log(this.nodes);
+    })
+
+    this.backservice.getEnlaces2().then((enl) => {
+      this.links = enl;
+      console.log(this.links);
+    })
+
   }
 
 }

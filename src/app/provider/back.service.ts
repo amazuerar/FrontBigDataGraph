@@ -12,8 +12,9 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class BackService {
 
-  address = "172.24.100.104";
-  port = "8080";
+  // address = "172.24.100.104";
+  address = "127.0.0.1";
+  port = "8081";
 
   /**
    * Crea una instancia del componente servicio RssService.
@@ -22,26 +23,28 @@ export class BackService {
    */
   constructor(private http: Http) { }
 
- 
-
-  /**
-   * Obtiene las noticias extraidas de la pagina de la universidad de los andes por unidades administrativas o academicas
-   * @returns arreglo de noticias 
-   * @memberof BackService
-   */
-  getNoticiasUniandes() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/NOTICIAS')
+  getEnlaces() {
+    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACES')
       .map(res => res.json())
       .toPromise()
   }
 
-   /**
-    * Obtiene la informacion de los colaboradores de la universidad de los andes
-    * @returns arreglo de colaboradores con su informacion, por ejemplo: nombre, correo, cargo, oficina. extension
-    * @memberof BackService
-    */
-   getPersonasUniandes() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/PERSONAS')
+
+  getNodos() {
+    return this.http.get('http://' + this.address + ':' + this.port + '/NODOS')
+      .map(res => res.json())
+      .toPromise()
+  }
+
+  getEnlaces2() {
+    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACESDOS')
+      .map(res => res.json())
+      .toPromise()
+  }
+
+
+  getNodos2() {
+    return this.http.get('http://' + this.address + ':' + this.port + '/NODOSDOS')
       .map(res => res.json())
       .toPromise()
   }
