@@ -91,10 +91,10 @@ export class GraphComponent implements OnInit {
     const width = +this.svg.attr('width');
     const height = +this.svg.attr('height');
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
-    this.radius = 8;
+    this.radius = 20;
 
     this.simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(function (d) { return d.name; }).distance(200))
+      .force('link', d3.forceLink(links).id(function (d) { return d.name; }).distance(350))
       .force('charge_force', d3.forceManyBody().strength(-90))
       .force('center_force', d3.forceCenter(width / 2, height / 2));
 
@@ -131,24 +131,27 @@ export class GraphComponent implements OnInit {
       .selectAll('text')
       .data(nodes)
       .enter().append('text')
-      .attr('font-size', '10px')
+      .attr('font-size', '15px')
       .attr('font', 'sans-serif')
-      .attr('pointer-events', 'none')
+      .attr('cursor', 'pointer')
+      //.attr('pointer-events', 'none')
       .attr('text-shadow', '0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff')
-      .text(function (d) { return d.name; });
+      .text(function (d) { return d.name; })
+      .on('click', function(d) { window.open('https://en.wikipedia.org/wiki/' + d.name); });
 
     this.arrow = this.g.append('g')
       .attr('class', 'marker')
       .selectAll('marker')
-      .data(['A', 'B', 'E'])
+      .data(['Person', 'Place', 'Fact'])
       .enter().append('marker')
       .attr('id', function (d) { return d; })
       .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 15)
+      .attr('refX', 25)
       .attr('refY', -1.5)
       .attr('markerWidth', 6)
       .attr('markerHeight', 6)
       .attr('orient', 'auto')
+      .attr('fill', this.arrowColour)
       .append('path')
       .attr('d', 'M 0, -5 L 10 , 0 L 0 , 5');
 
@@ -175,48 +178,61 @@ export class GraphComponent implements OnInit {
       .style("text-anchor", "middle")
       .style("pointer-events", "none")
       .attr("startOffset", "50%")
-      .text(function (d) {return 'va hacia> ' + d.target.name; });
+      .text(this.labelLink);
+      // .text(function (d) { return 'va hacia> ' + d.target.name; });
 
     this.simulation.on('tick', () => { this.ticked(); });
 
   }
 
+  labelLink(d) {
+    if (d.type === 'Person') {
+      return 'tiene relacion con esta persona';
+    }
+    if (d.type === 'Place') {
+      return 'tiene relacion con este lugar';
+    }
+    if (d.type === 'Fact') {
+      return 'tiene relacion con este hecho';
+    }
+
+  }
+
 
   linkColour(d) {
-    if (d.type == 'B') {
-      return 'red';
+    if (d.type === 'Person') {
+      return '#3498db';
     }
-    if (d.type == 'A') {
-      return 'blue';
+    if (d.type === 'Place') {
+      return '#e74c3c';
     }
-    if (d.type == 'E') {
-      return 'green';
+    if (d.type === 'Fact') {
+      return '#e67e22';
+    }
+  }
+
+   arrowColour(d) {
+    if (d === 'Person') {
+      return '#3498db';
+    }
+    if (d === 'Place') {
+      return '#e74c3c';
+    }
+    if (d === 'Fact') {
+      return '#e67e22';
     }
   }
 
   circleColour(d) {
-    if (d.group == '0') {
-      return 'blue';
+    if (d.group === 'Person') {
+      return '#2980b9';
     }
-    if (d.group == '1') {
-      return 'red';
+    if (d.group === 'Place') {
+      return '#C0392b';
     }
-    if (d.group == '2') {
-      return 'green';
+    if (d.group === 'Fact') {
+      return '#D35400';
     }
-    if (d.group == '3') {
-      return 'yellow';
-    }
-    if (d.group == '4') {
-      return 'black';
-    }
-    if (d.group == '5') {
-      return 'cyan';
-    }
-    if (d.group == '6') {
-      return 'pink';
-    }
-
   }
 
 
