@@ -12,8 +12,8 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class BackService {
 
-  //address = "172.24.100.104";
-  address = "127.0.0.1";
+  address = "172.24.100.104";
+  // address = "127.0.0.1";
   port = "8081";
 
   /**

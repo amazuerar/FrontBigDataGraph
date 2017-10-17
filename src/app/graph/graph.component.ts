@@ -2,7 +2,6 @@ import { Component, OnInit, Output, EventEmitter, AfterViewInit, OnChanges } fro
 import * as d3 from 'd3';
 import { BackService } from '../provider/back.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 
 
 @Component({
@@ -35,7 +34,7 @@ export class GraphComponent implements OnInit {
   edgelabels;
   edgepath;
 
-  constructor(private backservice: BackService, private fb: FormBuilder, private spinnerService: Ng4LoadingSpinnerService) {
+  constructor(private backservice: BackService, private fb: FormBuilder) {
   }
 
   ngOnInit() {
@@ -63,7 +62,7 @@ export class GraphComponent implements OnInit {
         const dx = d.target.x - d.source.x;
         const dy = d.target.y - d.source.y;
         const dr = Math.sqrt(dx * dx + dy * dy);
-        return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + d.target.x + ',' + d.target.y;
       });
 
     this.edgepath.attr('d', function (d) {
@@ -91,7 +90,6 @@ export class GraphComponent implements OnInit {
 
     const width = +this.svg.attr('width');
     const height = +this.svg.attr('height');
-    //this.color = d3.scaleOrdinal(d3.schemeCategory20);
     this.radius = 20;
 
     this.simulation = d3.forceSimulation(nodes)
@@ -123,9 +121,9 @@ export class GraphComponent implements OnInit {
       // .attr('fill', (d) => { return this.color(d.group); })
       .attr('fill', this.circleColour)
       .call(d3.drag()
-        .on('start', (d) => { return this.drag_start(d) })
-        .on('drag', (d) => { return this.drag_drag(d) })
-        .on('end', (d) => { return this.drag_end(d) }));
+        .on('start', (d) => { this.drag_start(d); })
+        .on('drag', (d) => { this.drag_drag(d); })
+        .on('end', (d) => { this.drag_end(d); }));
 
     this.name = this.g.append('g')
       .attr('class', 'text')
@@ -135,7 +133,6 @@ export class GraphComponent implements OnInit {
       .attr('font-size', '15px')
       .attr('font', 'sans-serif')
       .attr('cursor', 'pointer')
-      //.attr('pointer-events', 'none')
       .attr('text-shadow', '0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff')
       .text(function (d) { return d.title; })
       .on('click', function (d) { window.open('https://en.wikipedia.org/wiki/' + d.title); });
@@ -157,33 +154,31 @@ export class GraphComponent implements OnInit {
       .attr('d', 'M 0, -5 L 10 , 0 L 0 , 5');
 
     this.edgepath = this.g.append('g')
-      .selectAll(".edgepath")
+      .selectAll('.edgepath')
       .data(links)
       .enter()
       .append('path')
       .attr('class', 'edgepath')
       .attr('id', function (d, i) { return 'edgepath' + i; })
-      .style("pointer-events", "none");
+      .style('pointer-events', 'none');
 
     this.edgelabels = this.g.append('g')
-      .selectAll("edgelabel")
+      .selectAll('edgelabel')
       .data(links)
       .enter()
       .append('text')
-      .style("pointer-events", "none")
+      .style('pointer-events', 'none')
       .attr('class', 'edgelabel')
       .attr('id', function (d, i) { return 'edgelabel' + i; })
       .attr('font-size', '15')
       .append('textPath')
-      .attr('xlink:href', function (d, i) { return '#edgepath' + i })
-      .style("text-anchor", "middle")
-      .style("pointer-events", "none")
-      .attr("startOffset", "50%")
+      .attr('xlink:href', function (d, i) { return '#edgepath' + i; })
+      .style('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+      .attr('startOffset', '50%')
       .text(this.labelLink);
-    // .text(function (d) { return 'va hacia> ' + d.target.name; });
 
     this.simulation.on('tick', () => { this.ticked(); });
-    this.spinnerService.hide();
   }
 
 
@@ -244,20 +239,27 @@ export class GraphComponent implements OnInit {
   }
 
   drag_end(d) {
-    if (!d3.event.active) this.simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+    if (!d3.event.active) {
+      this.simulation.alphaTarget(0);
+
+      d.fx = null;
+      d.fy = null;
+    }
+
   }
 
   drag_start(d) {
-    if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+    if (!d3.event.active) {
+      this.simulation.alphaTarget(0.3).restart();
+
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
   }
 
   filter() {
 
-    this.spinnerService.show();
     if ((this.start === '' || this.start === null) && (this.end === '' || this.end === null)) {
       console.log('no hay fechas, consulta sin fechas');
 
@@ -297,10 +299,11 @@ export class GraphComponent implements OnInit {
         alert('El rango de fecha debe tener una fecha inicial y final');
       } else {
         console.log('es con fechas, perfecto, están las dos');
-        if (this.start._i.year > this.end._i.year) {
+        if (this.start > this.end) {
           alert('1. Fecha inicial no puede ser mayor a fecha final');
         } else {
-          if (this.personaje === '' || this.personaje === null && this.hecho === '' || this.hecho === null && this.lugar === '' || this.lugar === null) {
+          if (this.personaje === '' || this.personaje === null && this.hecho === ''
+            || this.hecho === null && this.lugar === '' || this.lugar === null) {
             alert('El rango de fechas es correcto, por favor ingrese un parámetro de busqueda');
           } else {
 
@@ -326,11 +329,12 @@ export class GraphComponent implements OnInit {
               miHecho = this.hecho;
             }
 
-            this.backservice.getNodosConFechas(this.personaje, this.lugar, this.hecho, this.start._i.year, this.end._i.year).then((nod) => {
+            this.backservice.getNodosConFechas(miPersona, miLugar, miHecho, this.start, this.end).then((nod) => {
               this.nodes = nod;
-              this.backservice.getEnlacesConFechas(this.personaje, this.lugar, this.hecho, this.start._i.year, this.end._i.year).then((enl) => {
-                this.links = enl; this.render(this.links, this.nodes);
-              });
+              this.backservice.getEnlacesConFechas(miPersona, miLugar, miHecho, this.start, this.end)
+                .then((enl) => {
+                  this.links = enl; this.render(this.links, this.nodes);
+                });
             });
           }
         }
