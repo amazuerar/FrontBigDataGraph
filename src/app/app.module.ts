@@ -10,6 +10,7 @@ import { LocationStrategy, HashLocationStrategy } from '@angular/common';
 import { DatePickerModule } from 'angular-io-datepicker';
 import { OverlayModule } from 'angular-io-overlay';
 import { GraphComponentComponent } from './graph-component/graph-component.component';
+import { Ng4LoadingSpinnerModule } from 'ng4-loading-spinner';
 
 const appRoutes: Routes = [
   { path: 'Graph', component: GraphComponent },
@@ -30,6 +31,7 @@ const appRoutes: Routes = [
     ReactiveFormsModule,
     OverlayModule,
     DatePickerModule,
+    Ng4LoadingSpinnerModule
   ],
   providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }, BackService ],
   bootstrap: [AppComponent]

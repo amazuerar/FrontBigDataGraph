@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter, AfterViewInit, OnChanges } fro
 import * as d3 from 'd3';
 import { BackService } from '../provider/back.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
+import { Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 
 
 @Component({
@@ -11,11 +12,11 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 })
 export class GraphComponent implements OnInit {
 
-  start: any;
-  end: any;
-  personaje: string;
-  hecho: string;
-  lugar: string;
+  start: any = '';
+  end: any = '';
+  personaje = '';
+  hecho = '';
+  lugar = '';
   nodes = [];
   links = [];
 
@@ -34,7 +35,7 @@ export class GraphComponent implements OnInit {
   edgelabels;
   edgepath;
 
-  constructor(private backservice: BackService, private fb: FormBuilder) {
+  constructor(private backservice: BackService, private fb: FormBuilder, private spinnerService: Ng4LoadingSpinnerService) {
   }
 
   ngOnInit() {
@@ -137,7 +138,7 @@ export class GraphComponent implements OnInit {
       //.attr('pointer-events', 'none')
       .attr('text-shadow', '0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff')
       .text(function (d) { return d.title; })
-      .on('click', function(d) { window.open('https://en.wikipedia.org/wiki/' + d.title); });
+      .on('click', function (d) { window.open('https://en.wikipedia.org/wiki/' + d.title); });
 
     this.arrow = this.g.append('g')
       .attr('class', 'marker')
@@ -179,10 +180,10 @@ export class GraphComponent implements OnInit {
       .style("pointer-events", "none")
       .attr("startOffset", "50%")
       .text(this.labelLink);
-      // .text(function (d) { return 'va hacia> ' + d.target.name; });
+    // .text(function (d) { return 'va hacia> ' + d.target.name; });
 
     this.simulation.on('tick', () => { this.ticked(); });
-
+    this.spinnerService.hide();
   }
 
 
@@ -212,7 +213,7 @@ export class GraphComponent implements OnInit {
     }
   }
 
-   arrowColour(d) {
+  arrowColour(d) {
     if (d === 'People') {
       return '#3498db';
     }
@@ -255,14 +256,100 @@ export class GraphComponent implements OnInit {
   }
 
   filter() {
-    this.backservice.getNodos(this.personaje, this.lugar, this.hecho).then((nod) => {
-      this.nodes = nod;
-      this.backservice.getEnlaces(this.personaje, this.lugar, this.hecho).then((enl) => {
-        this.links = enl; this.render(this.links, this.nodes);
+
+    this.spinnerService.show();
+    if ((this.start === '' || this.start === null) && (this.end === '' || this.end === null)) {
+      console.log('no hay fechas, consulta sin fechas');
+
+      let miLugar = '';
+      let miPersona = '';
+      let miHecho = '';
+
+      if (this.lugar === '') {
+        miLugar = 'ABCDEFGHAAAA';
+      } else {
+        miLugar = this.lugar;
+      }
+
+      if (this.personaje === '') {
+        miPersona = 'ABCDEFGHAAAA';
+      } else {
+        miPersona = this.personaje;
+      }
+
+      if (this.hecho === '') {
+        miHecho = 'ABCDEFGHAAAA';
+      } else {
+        miHecho = this.hecho;
+      }
+
+      this.backservice.getNodos(miPersona, miLugar, miHecho).then((nod) => {
+        this.nodes = nod;
+        this.backservice.getEnlaces(miPersona, miLugar, miHecho).then((enl) => {
+          this.links = enl; this.render(this.links, this.nodes);
+        });
+
       });
+    } else {
+      console.log('consulta con fechas');
+      if (this.start === '' || this.start === null || this.end === '' || this.end === null) {
+        console.log('es con fechas pero falta alguna');
+        alert('El rango de fecha debe tener una fecha inicial y final');
+      } else {
+        console.log('es con fechas, perfecto, están las dos');
+        if (this.start._i.year > this.end._i.year) {
+          alert('1. Fecha inicial no puede ser mayor a fecha final');
+        } else {
+          if (this.personaje === '' || this.personaje === null && this.hecho === '' || this.hecho === null && this.lugar === '' || this.lugar === null) {
+            alert('El rango de fechas es correcto, por favor ingrese un parámetro de busqueda');
+          } else {
 
-    });
+            let miLugar = '';
+            let miPersona = '';
+            let miHecho = '';
 
+            if (this.lugar === '') {
+              miLugar = 'ABCDEFGHAAAA';
+            } else {
+              miLugar = this.lugar;
+            }
+
+            if (this.personaje === '') {
+              miPersona = 'ABCDEFGHAAAA';
+            } else {
+              miPersona = this.personaje;
+            }
+
+            if (this.hecho === '') {
+              miHecho = 'ABCDEFGHAAAA';
+            } else {
+              miHecho = this.hecho;
+            }
+
+            this.backservice.getNodosConFechas(this.personaje, this.lugar, this.hecho, this.start._i.year, this.end._i.year).then((nod) => {
+              this.nodes = nod;
+              this.backservice.getEnlacesConFechas(this.personaje, this.lugar, this.hecho, this.start._i.year, this.end._i.year).then((enl) => {
+                this.links = enl; this.render(this.links, this.nodes);
+              });
+            });
+          }
+        }
+      }
+    }
+
+
+
+  }
+
+  clean() {
+    this.personaje = '';
+    this.hecho = '';
+    this.lugar = '';
+    this.start = '';
+    this.end = '';
+    this.links = [];
+    this.nodes = [];
+    this.render(this.links, this.nodes);
   }
 
 

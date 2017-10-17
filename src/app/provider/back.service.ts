@@ -37,4 +37,18 @@ export class BackService {
   }
 
 
+  getEnlacesConFechas(personaje, lugar, hecho, start, end) {
+    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACESFECHAS' + '/' + personaje + '/' + lugar + '/' + hecho + '/' + start +  '/' + end )
+      .map(res => res.json())
+      .toPromise()
+  }
+
+
+  getNodosConFechas(personaje, lugar, hecho, start, end) {
+    return this.http.get('http://' + this.address + ':' + this.port + '/NODOSFECHAS' + '/' + personaje + '/' + lugar + '/' + hecho + '/' + start +  '/' + end)
+      .map(res => res.json())
+      .toPromise()
+  }
+
+
 }
