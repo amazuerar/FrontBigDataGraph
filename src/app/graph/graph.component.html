@@ -12,13 +12,13 @@
 
 
   <div class="form-row">
-    <div class="form-group col-md-3">
+    <div class="form-group col-md-2">
       <label class="col-form-label">Fecha Inicio</label>
-      <date-picker [(ngModel)]="start" [showClearButton]="false"></date-picker>
+      <date-picker [(ngModel)]="start" format="YYYY" [showClearButton]="false"></date-picker>
     </div>
-    <div class="form-group col-md-3">
+    <div class="form-group col-md-2">
       <label class="col-form-label">Fecha Fin</label>
-      <date-picker [(ngModel)]="end" [showClearButton]="false"></date-picker>
+      <date-picker [(ngModel)]="end" format="YYYY" [showClearButton]="false"></date-picker>
     </div>
     <div class="form-group col-md-2">
       <label class="col-form-label">Personaje</label>
@@ -31,6 +31,16 @@
     <div class="form-group col-md-2">
       <label class="col-form-label">Lugar</label>
       <input type="text" class="form-control" placeholder="Lugar de interés" [(ngModel)]="lugar">
+    </div>
+    <div class="form-group col-md-2">
+      <label class="col-form-label">Grafos guardados</label>
+      <select class="form-control" id="exampleFormControlSelect1">
+      <option value="0" selected>Seleccion...</option>
+      <option>Grafo 2</option>
+      <option>Grafo 3</option>
+      <option>Grafo 4</option>
+      <option>Grafo 5</option>
+    </select>
     </div>
   </div>
 

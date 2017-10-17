@@ -54,8 +54,8 @@ export class GraphComponent implements OnInit {
       .attr('cy', function (d) { return d.y; });
 
     this.name
-      .attr('x', function (d) { return d.x; })
-      .attr('y', function (d) { return d.y; });
+      .attr('x', function (d) { return d.x + 20; })
+      .attr('y', function (d) { return d.y + 1; });
 
     this.link
       .attr('d', function (d) {
@@ -90,11 +90,11 @@ export class GraphComponent implements OnInit {
 
     const width = +this.svg.attr('width');
     const height = +this.svg.attr('height');
-    this.color = d3.scaleOrdinal(d3.schemeCategory20);
+    //this.color = d3.scaleOrdinal(d3.schemeCategory20);
     this.radius = 20;
 
     this.simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(function (d) { return d.name; }).distance(350))
+      .force('link', d3.forceLink(links).id(function (d) { return d.title; }).distance(350))
       .force('charge_force', d3.forceManyBody().strength(-90))
       .force('center_force', d3.forceCenter(width / 2, height / 2));
 
@@ -108,8 +108,8 @@ export class GraphComponent implements OnInit {
       .enter().append('line')
       .attr('stroke-width', 2)
       .style('stroke', this.linkColour)
-      .attr('class', function (d) { return 'link ' + d.type; })
-      .attr('marker-end', function (d) { return 'url(#' + d.type + ')'; });
+      .attr('class', function (d) { return 'link ' + d.category; })
+      .attr('marker-end', function (d) { return 'url(#' + d.category + ')'; });
 
 
     this.node = this.g.append('g')
@@ -136,13 +136,13 @@ export class GraphComponent implements OnInit {
       .attr('cursor', 'pointer')
       //.attr('pointer-events', 'none')
       .attr('text-shadow', '0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff')
-      .text(function (d) { return d.name; })
-      .on('click', function(d) { window.open('https://en.wikipedia.org/wiki/' + d.name); });
+      .text(function (d) { return d.title; })
+      .on('click', function(d) { window.open('https://en.wikipedia.org/wiki/' + d.title); });
 
     this.arrow = this.g.append('g')
       .attr('class', 'marker')
       .selectAll('marker')
-      .data(['Person', 'Place', 'Fact'])
+      .data(['People', 'Place', 'Fact'])
       .enter().append('marker')
       .attr('id', function (d) { return d; })
       .attr('viewBox', '0 -5 10 10')
@@ -185,14 +185,15 @@ export class GraphComponent implements OnInit {
 
   }
 
+
   labelLink(d) {
-    if (d.type === 'Person') {
+    if (d.category === 'People') {
       return 'tiene relacion con esta persona';
     }
-    if (d.type === 'Place') {
+    if (d.category === 'Place') {
       return 'tiene relacion con este lugar';
     }
-    if (d.type === 'Fact') {
+    if (d.category === 'Fact') {
       return 'tiene relacion con este hecho';
     }
 
@@ -200,19 +201,19 @@ export class GraphComponent implements OnInit {
 
 
   linkColour(d) {
-    if (d.type === 'Person') {
+    if (d.category === 'People') {
       return '#3498db';
     }
-    if (d.type === 'Place') {
+    if (d.category === 'Place') {
       return '#e74c3c';
     }
-    if (d.type === 'Fact') {
+    if (d.category === 'Fact') {
       return '#e67e22';
     }
   }
 
    arrowColour(d) {
-    if (d === 'Person') {
+    if (d === 'People') {
       return '#3498db';
     }
     if (d === 'Place') {
@@ -224,13 +225,13 @@ export class GraphComponent implements OnInit {
   }
 
   circleColour(d) {
-    if (d.group === 'Person') {
+    if (d.category === 'People') {
       return '#2980b9';
     }
-    if (d.group === 'Place') {
+    if (d.category === 'Place') {
       return '#C0392b';
     }
-    if (d.group === 'Fact') {
+    if (d.category === 'Fact') {
       return '#D35400';
     }
   }
@@ -254,25 +255,15 @@ export class GraphComponent implements OnInit {
   }
 
   filter() {
-    this.backservice.getNodos().then((nod) => {
+    this.backservice.getNodos(this.personaje, this.lugar, this.hecho).then((nod) => {
       this.nodes = nod;
-      this.backservice.getEnlaces().then((enl) => {
+      this.backservice.getEnlaces(this.personaje, this.lugar, this.hecho).then((enl) => {
         this.links = enl; this.render(this.links, this.nodes);
       });
 
-    })
+    });
 
   }
 
-  clean() {
-    this.backservice.getNodos2().then((nod) => {
-      this.nodes = nod;
-      this.backservice.getEnlaces2().then((enl) => {
-        this.links = enl; this.render(this.links, this.nodes);
-      });
-
-    })
-
-  }
 
 }

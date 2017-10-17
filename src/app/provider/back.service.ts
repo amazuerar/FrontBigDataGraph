@@ -12,7 +12,7 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class BackService {
 
-  // address = "172.24.100.104";
+  //address = "172.24.100.104";
   address = "127.0.0.1";
   port = "8081";
 
@@ -23,30 +23,18 @@ export class BackService {
    */
   constructor(private http: Http) { }
 
-  getEnlaces() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACES')
+  getEnlaces(personaje, lugar, hecho) {
+    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACES' + '/' + personaje + '/' + lugar + '/' + hecho + '/' + '/' )
       .map(res => res.json())
       .toPromise()
   }
 
 
-  getNodos() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/NODOS')
+  getNodos(personaje, lugar, hecho) {
+    return this.http.get('http://' + this.address + ':' + this.port + '/NODOS' + '/' + personaje + '/' + lugar + '/' + hecho + '/' + '/')
       .map(res => res.json())
       .toPromise()
   }
 
-  getEnlaces2() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/ENLACESDOS')
-      .map(res => res.json())
-      .toPromise()
-  }
-
-
-  getNodos2() {
-    return this.http.get('http://' + this.address + ':' + this.port + '/NODOSDOS')
-      .map(res => res.json())
-      .toPromise()
-  }
 
 }
